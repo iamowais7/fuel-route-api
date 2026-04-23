@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+db.sqlite3
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+ENV/
+
+# Large data files — share only the sample
+route_api/data/fuel_prices_processed.csv
+route_api/data/geocode_cache.json
+route_api/data/fuel-prices-for-be-assessment.csv
