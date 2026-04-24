@@ -103,8 +103,9 @@ def generate_map_html(
   <div id="map"></div>
   <script>
     var map = L.map('map');
-    L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    L.tileLayer('https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 19
     }}).addTo(map);
 
     var routeCoords = {json.dumps(route_latlng)};

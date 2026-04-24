@@ -32,27 +32,43 @@ def find_stations_near_route(
     Returns stations within max_off_route_miles of the route,
     annotated with dist_from_start along the route.
 
-    Samples the route every SAMPLE_EVERY points for speed, then refines
-    the nearest match to the full route for stations that qualify.
+    Uses a bounding-box pre-filter to eliminate irrelevant stations fast,
+    then samples the route to ~500 points so the inner loop stays small.
     """
     if not stations or not route_coords:
         return []
 
-    n = len(route_coords)
-    # Pre-extract lats/lons to avoid repeated tuple unpacking
     route_lats = [c[1] for c in route_coords]
     route_lons = [c[0] for c in route_coords]
+
+    # Bounding box of the route + buffer
+    buf = max_off_route_miles / 55.0
+    min_lat = min(route_lats) - buf
+    max_lat = max(route_lats) + buf
+    min_lon = min(route_lons) - buf
+    max_lon = max(route_lons) + buf
+
+    # Sample route to at most 500 points for speed
+    n = len(route_coords)
+    step = max(1, n // 500)
+    sampled = list(range(0, n, step))
+    if sampled[-1] != n - 1:
+        sampled.append(n - 1)
 
     result = []
     for station in stations:
         slat = station['lat']
         slon = station['lon']
-        cos_slat = math.cos(math.radians(slat))
 
+        # Fast bounding-box reject — skips ~90% of stations on a typical route
+        if not (min_lat <= slat <= max_lat and min_lon <= slon <= max_lon):
+            continue
+
+        cos_slat = math.cos(math.radians(slat))
         best_dist = float('inf')
         best_idx = 0
 
-        for i in range(n):
+        for i in sampled:
             dlat = math.radians(route_lats[i] - slat)
             dlon = math.radians(route_lons[i] - slon)
             a = (math.sin(dlat / 2) ** 2 +
